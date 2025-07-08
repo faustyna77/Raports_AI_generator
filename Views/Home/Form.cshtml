@@ -1,0 +1,45 @@
+﻿@model AI_Raports_Generators.Models.ViewModels.Form
+<h2>Formularz rejestracyjny</h2>
+
+<form asp-action="Form" method="post">
+
+    <div>
+        <label asp-for="Name"></label>
+        <input asp-for="Name" />
+    </div>
+
+    <div>
+        <label asp-for="Surname"></label>
+        <input asp-for="Surname" />
+    </div>
+
+    <div>
+        <label asp-for="Age"></label>
+        <input asp-for="Age" type="number" />
+    </div>
+
+    <div>
+        <label asp-for="DateOfBirth"></label>
+        <input asp-for="DateOfBirth" type="date" />
+    </div>
+
+    <div>
+        <label asp-for="Email"></label>
+        <input asp-for="Email" type="email" />
+    </div>
+
+    <button type="submit">Wyślij</button>
+</form>
+
+@if (Model != null)
+{
+    <h3>Dane przesłane</h3>
+    <ol>
+        <li>Imię: @Model.Name</li>
+        <li>Nazwisko: @Model.Surname</li>
+        <li>Wiek: @Model.Age</li>
+        <li>Data urodzenia: @Model.DateOfBirth.ToShortDateString()</li>
+        <li>Email: @Model.Email</li>
+    </ol>
+}
+
