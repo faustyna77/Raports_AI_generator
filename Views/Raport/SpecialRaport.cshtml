@@ -1,0 +1,34 @@
+﻿@model AI_Raports_Generators.Models.ViewModels.SpecialRaport
+
+<h2>Generowanie dokumentów</h2>
+
+<form asp-action="SpecialRaport" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label asp-for="DocumentType">Typ dokumentu</label>
+        <input asp-for="DocumentType" class="form-control" />
+        <span asp-validation-for="DocumentType" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="NameOfCompany">Nazwa firmy</label>
+        <input asp-for="NameOfCompany" class="form-control" />
+        <span asp-validation-for="NameOfCompany" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description">Opis</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">Generuj</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.GeneratedResponse))
+{
+    <hr />
+    <h4>Treść wygenerowana przez AI:</h4>
+    <pre>@Model.GeneratedResponse</pre>
+}

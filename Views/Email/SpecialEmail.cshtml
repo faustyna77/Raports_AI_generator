@@ -1,0 +1,33 @@
+﻿@model AI_Raports_Generators.Models.ViewModels.SpecialEmail
+
+<h2>Generowanie maila</h2>
+<form asp-action="SpecialEmail" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group">
+        <label asp-for="EmailAddress">Adres maila</label>
+        <input asp-for="EmailAddress" class="form-control" />
+       
+    </div>
+    <div class="form-group">
+        <label asp-for="Topic">Temat</label>
+        <input asp-for="Topic" class="form-control" />
+
+       
+    </div>
+    <div class="form-group">
+        <label asp-for="Purpose">tresc</label>
+        <input asp-for="Purpose" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Generuj</button>
+</form>
+
+
+
+@if(!string.IsNullOrEmpty(Model.GeneratedEmail))
+{
+    <hr />
+    <h4>Treść wygenerowana przez AI:</h4>
+    <pre>@Model.GeneratedEmail</pre>
+}
+)
+

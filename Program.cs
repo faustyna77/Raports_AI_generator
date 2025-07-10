@@ -24,6 +24,11 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IAIContentGeneratorService, AIContentGeneratorService>();
+
+builder.Services.AddScoped<IAIResponseGeneratorService, AIResponseGeneratorService>();
+builder.Services.AddScoped<IAIEmailGeneratorService, AIGeneratedEmailService>();
+
 
 var app = builder.Build();
 
@@ -59,6 +64,17 @@ app.MapControllerRoute(
     name: "custom2",
     pattern: "view/{nazwa?}",
     defaults: new { controller = "Home", action = "Form" });
+
+app.MapControllerRoute(
+    name: "custom3",
+    pattern: "generate/{nazwa?}",
+    defaults: new { controller = "Raport", action = "SpecialRaport" });
+
+
+app.MapControllerRoute(
+    name: "custom4",
+    pattern: "mail/{nazwa?}",
+    defaults: new { controller = "Email", action = "SpecialEmail" });
 
 
 

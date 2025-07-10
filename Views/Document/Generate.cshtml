@@ -1,0 +1,19 @@
+﻿@model AI_Raports_Generators.Models.ViewModels.GenerateDocumentViewModel
+
+
+
+
+<form asp-action="Generate" method="post">
+    <div class="form-group">
+        <label for="prompt">Podaj temat / opis dokumentu:</label>
+        <textarea asp-for="Prompt" class="form-control"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Generuj</button>
+</form>
+
+@if (Model.GeneratedContent != null)
+{
+    <hr />
+    <h4>Treść wygenerowana przez AI:</h4>
+    <pre>@Model.GeneratedContent</pre>
+}

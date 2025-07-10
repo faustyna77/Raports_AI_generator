@@ -29,5 +29,8 @@ namespace AI_Raports_Generators.Models.Domains
 
         public int ClientId { get; set; }
         public Client Client { get; set; }
+
+        public byte[]? PdfFile { get; set; }
+        public string? AIGeneratedContent { get; set; }
     }
 }

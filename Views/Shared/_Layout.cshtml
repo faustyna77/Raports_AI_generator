@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - AI_Raports_Generators</title>
+    <title>@ViewData["Title"] - Generowanie pism, wniosków i raportów AI</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AI_Raports_Generators.styles.css" asp-append-version="true" />
@@ -25,6 +25,16 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Document" asp-action="Generate">Generuj dokument</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Raport" asp-action="SpecialRaport">Generuj raport</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Email" asp-action="SpecialEmail">Generuj maila</a>
+                        </li>
+
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
