@@ -1,0 +1,25 @@
+﻿@using AI_Raports_Generators.Models.ViewModels
+
+
+<h2>Generuj Sprawozdanie</h2>
+
+<form asp-action="GenerateReport" asp-controller="Test" method="post" enctype="multipart/form-data">
+    <div>
+        <label>Instrukcja (PDF / TXT):</label>
+        <input type="file" name="instructionFile" />
+    </div>
+    <div>
+        <label>Załączniki (obrazy / inne pliki):</label>
+        <input type="file" name="attachmentFiles" multiple />
+    </div>
+    <button type="submit">Wygeneruj</button>
+</form>
+
+@if (ViewBag.AIReport != null)
+{
+    <h3>Wygenerowane sprawozdanie:</h3>
+    <form method="post" asp-action="SaveReportAsPdf">
+        <textarea name="editedReport" rows="20" cols="100">@ViewBag.AIReport</textarea>
+        <button type="submit">Zapisz jako PDF</button>
+    </form>
+}

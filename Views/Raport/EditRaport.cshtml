@@ -1,0 +1,39 @@
+﻿@model AI_Raports_Generators.Models.ViewModels.SpecialRaport
+
+@{
+    ViewBag.Title = "Edytuj dokument";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h2 class="mb-4"><i class="bi bi-pencil-square"></i> Edytuj dokument</h2>
+
+            <form asp-action="Edit" asp-route-id="@ViewBag.DocumentId" method="post">
+                <div class="mb-3">
+                    <label asp-for="DocumentType" class="form-label">Typ dokumentu</label>
+                    <input asp-for="DocumentType" class="form-control" />
+                    <span asp-validation-for="DocumentType" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NameOfCompany" class="form-label">Nazwa firmy</label>
+                    <input asp-for="NameOfCompany" class="form-control" />
+                    <span asp-validation-for="NameOfCompany" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="GeneratedResponse" class="form-label">Treść dokumentu</label>
+                    <textarea asp-for="GeneratedResponse" rows="12" class="form-control"></textarea>
+                    <span asp-validation-for="GeneratedResponse" class="text-danger"></span>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> Zapisz zmiany
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

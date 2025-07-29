@@ -1,33 +1,44 @@
 ﻿@model AI_Raports_Generators.Models.ViewModels.SpecialEmail
 
-<h2>Generowanie maila</h2>
-<form asp-action="SpecialEmail" method="post">
-    @Html.AntiForgeryToken()
-    <div class="form-group">
-        <label asp-for="EmailAddress">Adres maila</label>
-        <input asp-for="EmailAddress" class="form-control" />
-       
-    </div>
-    <div class="form-group">
-        <label asp-for="Topic">Temat</label>
-        <input asp-for="Topic" class="form-control" />
-
-       
-    </div>
-    <div class="form-group">
-        <label asp-for="Purpose">tresc</label>
-        <input asp-for="Purpose" class="form-control" />
-    </div>
-    <button type="submit" class="btn btn-primary mt-2">Generuj</button>
-</form>
-
-
-
-@if(!string.IsNullOrEmpty(Model.GeneratedEmail))
-{
-    <hr />
-    <h4>Treść wygenerowana przez AI:</h4>
-    <pre>@Model.GeneratedEmail</pre>
+@{
+    ViewData["Title"] = "Generowanie maila AI";
 }
-)
 
+<div class="container mt-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h2 class="mb-4">📧 Generowanie maila</h2>
+
+            <form asp-action="SpecialEmail" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label asp-for="EmailAddress" class="form-label">Adres e-mail odbiorcy</label>
+                    <input asp-for="EmailAddress" class="form-control" placeholder="np. kontakt@firma.pl" />
+                    <span asp-validation-for="EmailAddress" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Topic" class="form-label">Temat wiadomości</label>
+                    <input asp-for="Topic" class="form-control" placeholder="np. Prośba o spotkanie" />
+                    <span asp-validation-for="Topic" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Purpose" class="form-label">Treść/zamiar maila</label>
+                    <textarea asp-for="Purpose" class="form-control" rows="4" placeholder="Opisz, czego dotyczy wiadomość..."></textarea>
+                    <span asp-validation-for="Purpose" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 mt-3">✉️ Generuj e-mail</button>
+            </form>
+
+            @if (!string.IsNullOrEmpty(Model.GeneratedEmail))
+            {
+                <hr class="my-4" />
+                <h4 class="mb-3">📨 Wygenerowana treść e-maila:</h4>
+                <pre class="bg-light p-3 rounded border">@Model.GeneratedEmail</pre>
+            }
+        </div>
+    </div>
+</div>

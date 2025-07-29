@@ -1,34 +1,74 @@
 ﻿@model AI_Raports_Generators.Models.ViewModels.SpecialRaport
 
-<h2>Generowanie dokumentów</h2>
-
-<form asp-action="SpecialRaport" method="post">
-    @Html.AntiForgeryToken()
-
-    <div class="form-group">
-        <label asp-for="DocumentType">Typ dokumentu</label>
-        <input asp-for="DocumentType" class="form-control" />
-        <span asp-validation-for="DocumentType" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="NameOfCompany">Nazwa firmy</label>
-        <input asp-for="NameOfCompany" class="form-control" />
-        <span asp-validation-for="NameOfCompany" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Description">Opis</label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary mt-2">Generuj</button>
-</form>
-
-@if (!string.IsNullOrEmpty(Model.GeneratedResponse))
-{
-    <hr />
-    <h4>Treść wygenerowana przez AI:</h4>
-    <pre>@Model.GeneratedResponse</pre>
+@{
+    ViewData["Title"] = "Generowanie specjalnego dokumentu";
 }
+
+<div class="container mt-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h2 class="mb-4">📄 Generuj specjalny dokument</h2>
+
+            <form asp-action="SpecialRaport" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label asp-for="DocumentType" class="form-label">Typ dokumentu</label>
+                    <select asp-for="DocumentType" asp-items="Model.DocumentTypes" class="form-select"></select>
+                    <span asp-validation-for="DocumentType" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NameOfCompany" class="form-label">Nazwa firmy</label>
+                    <input asp-for="NameOfCompany" class="form-control" placeholder="np. Janex Sp. z o.o." />
+                    <span asp-validation-for="NameOfCompany" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Opis sprawy</label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Opisz sprawę, kontekst dokumentu..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+
+                <h5 class="mt-4">📤 Opcje wysyłki</h5>
+
+                <div class="form-check mb-2">
+                    <input type="checkbox" class="form-check-input" asp-for="SendOptions.SendToEmail" />
+                    <label class="form-check-label" asp-for="SendOptions.SendToEmail">Wyślij e-mailem</label>
+                </div>
+
+                <div class="mb-3">
+                    <input type="email" class="form-control" asp-for="SendOptions.Email" placeholder="Adres e-mail" />
+                    <span asp-validation-for="SendOptions.Email" class="text-danger small"></span>
+                </div>
+
+                <div class="form-check mb-2">
+                    <input type="checkbox" class="form-check-input" asp-for="SendOptions.SaveToDrive" />
+                    <label class="form-check-label" asp-for="SendOptions.SaveToDrive">Zapisz na Google Drive</label>
+                </div>
+
+                <div class="mb-3">
+                    <input type="text" class="form-control" asp-for="SendOptions.GoogleDriveLink" placeholder="Link do folderu Google Drive" />
+                    <span asp-validation-for="SendOptions.GoogleDriveLink" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" name="submit" value="generate" class="btn btn-primary w-100 mt-3">⚙️ Generuj dokument</button>
+
+                @if (!string.IsNullOrEmpty(Model.GeneratedResponse))
+                {
+                    <hr class="my-4" />
+                    <h4>📝 Treść wygenerowana przez AI (możesz edytować):</h4>
+
+                    <textarea asp-for="GeneratedResponse" rows="15" class="form-control mb-3"></textarea>
+
+                    <!-- Ukryte dane do zachowania kontekstu -->
+                    <input type="hidden" asp-for="DocumentType" />
+                    <input type="hidden" asp-for="NameOfCompany" />
+                    <input type="hidden" asp-for="Description" />
+
+                    <button type="submit" name="submit" value="save" class="btn btn-success w-100">💾 Zapisz do bazy</button>
+                }
+            </form>
+        </div>
+    </div>
+</div>

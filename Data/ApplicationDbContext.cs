@@ -16,6 +16,7 @@ namespace AI_Raports_Generators.Data
         public DbSet<Document> Documents { get; set; }
         public DbSet<MethodOfPayment> MethodOfPayments { get; set; }
         public DbSet<DocumentPosition> DocumentPositions { get; set; }
+        public DbSet<GeneratedDocument> GeneratedDocuments { get; set; }
 
 
 

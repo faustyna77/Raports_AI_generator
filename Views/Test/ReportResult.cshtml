@@ -1,0 +1,16 @@
+﻿@{
+    ViewData["Title"] = "Wygenerowany raport";
+}
+
+<h2>Edytuj raport</h2>
+
+<form asp-action="SaveEditedReport" method="post" enctype="multipart/form-data">
+    <div>
+        <textarea name="editedReport" rows="25" cols="100">@ViewBag.AIReport</textarea>
+    </div>
+    <div>
+        <label>Dodaj obrazy:</label>
+        <input type="file" name="images" multiple accept="image/*" />
+    </div>
+    <button type="submit">Zapisz jako PDF i dodaj do Moich dokumentów</button>
+</form>

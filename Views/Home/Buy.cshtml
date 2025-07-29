@@ -1,0 +1,9 @@
+﻿@{
+    ViewData["Title"] = "Kup dostęp";
+}
+
+<h2>Kup dostęp do AI Generatora</h2>
+
+<form asp-controller="Stripe" asp-action="CreateCheckoutSession" method="post">
+    <button type="submit" class="btn btn-success">Kup za 99,00 zł</button>
+</form>

@@ -5,8 +5,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using AI_Raports_Generators.Services;
+using QuestPDF.Infrastructure;
+
+using AI_Raports_Generators.Models.ViewModels; // to dodaj na górze
+
+
 
 using System;
+QuestPDF.Settings.License = LicenseType.Community;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +34,13 @@ builder.Services.AddScoped<IAIContentGeneratorService, AIContentGeneratorService
 
 builder.Services.AddScoped<IAIResponseGeneratorService, AIResponseGeneratorService>();
 builder.Services.AddScoped<IAIEmailGeneratorService, AIGeneratedEmailService>();
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+builder.Services.AddHttpClient<AITestService>();
+builder.Services.AddSession();
+builder.Services.AddHttpContextAccessor();
+
+Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+
 
 
 var app = builder.Build();
@@ -78,6 +91,8 @@ app.MapControllerRoute(
 
 
 
+
+app.UseSession();
 
 
 

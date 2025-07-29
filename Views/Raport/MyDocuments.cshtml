@@ -1,0 +1,31 @@
+﻿@using AI_Raports_Generators.Models.Domains
+
+
+@model IEnumerable<GeneratedDocument>
+
+
+<h2>Moje dokumenty</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tytuł</th>
+            <th>Data utworzenia</th>
+            <th>Akcje</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var doc in Model)
+    {
+        <tr>
+            <td>@doc.Title</td>
+            <td>@doc.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+            <td>
+                <a asp-action="DownloadPdf" asp-route-id="@doc.Id" class="btn btn-sm btn-primary">Pobierz PDF</a>
+                <a asp-action="Edit" asp-route-id="@doc.Id" class="btn btn-sm btn-warning">Edytuj</a>
+
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -20,10 +20,26 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.17" />
 		<PackageReference Include="Neo4j.Driver" Version="5.28.2" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
+		<PackageReference Include="QuestPDF" Version="2025.7.0" />
+		<PackageReference Include="Stripe.net" Version="48.3.0" />
+		<PackageReference Include="System.Text.Json" Version="9.0.7" />
+		<PackageReference Include="Tesseract" Version="5.2.0" />
+		
+			<None Update="tessdata\**\*.*">
+				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			</None>
+		
+
+
+		<PackageReference Include="itext7" Version="7.2.5" />
+		
+
+
+
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Models\Domains\" />
+	  <Folder Include="Views\Nowy folder\" />
 	</ItemGroup>
 
 </Project>

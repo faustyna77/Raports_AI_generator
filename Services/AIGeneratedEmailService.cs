@@ -1,37 +1,46 @@
 ﻿using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
 
 namespace AI_Raports_Generators.Services
 {
-    public class AIGeneratedEmailService:IAIEmailGeneratorService
+    public class AIGeneratedEmailService : IAIEmailGeneratorService
     {
-
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AIGeneratedEmailService(IConfiguration configuration)
+        public AIGeneratedEmailService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
         }
-
 
         public async Task<string> GenerateEmailAsync(string emailAddress, string topic, string purpose)
         {
-            var prompt = $" Jesteś agentem do tworzenia służbowych emaili.Napisz oficjalny mail, który jest do  {emailAddress} i, którego temat to {topic}, a sprawa w której piszesz dotyczy: {purpose}. Tresci wygenerowane przez ciebie beda oficjalnie wysyłane w mailach  wiec nie dopytuj na końcu bo wystawiasz końcowy dokument";
+            var prompt = $"Jesteś agentem do tworzenia służbowych emaili. Napisz oficjalny mail, który jest do {emailAddress}, którego temat to {topic}, a sprawa dotyczy: {purpose}. Treści wygenerowane przez ciebie będą oficjalnie wysyłane w mailach, więc nie dopytuj na końcu, bo wystawiasz końcowy dokument.";
 
             var apiKey = _configuration["OpenRouter:ApiKey"];
 
-            using var httpClient = new HttpClient();
+            var httpClient = new HttpClient
+            {
+                Timeout = TimeSpan.FromMinutes(3)
+            };
+
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
             httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://twojadomena.pl");
             httpClient.DefaultRequestHeaders.Add("X-Title", "Raport AI Generator");
 
+            var selectedModel = _httpContextAccessor.HttpContext?.Session.GetString("SelectedModel")
+                                ?? "moonshotai/kimi-k2:free";
+
             var body = new
             {
-                model = "openrouter/cypher-alpha:free",
+                model = selectedModel,
                 messages = new[]
                 {
-                new { role = "user", content = prompt }
-            }
+                    new { role = "user", content = prompt }
+                }
             };
 
             var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");

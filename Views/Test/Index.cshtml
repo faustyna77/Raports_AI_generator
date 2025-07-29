@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Generuj Raport";
+}
+
+<h2>Generuj Sprawozdanie</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div style="color: red">@TempData["Error"]</div>
+}
+
+<form asp-action="GenerateReport" method="post" enctype="multipart/form-data">
+    <div>
+        <label>Instrukcja (PDF / TXT):</label>
+        <input type="file" name="instructionFile" />
+    </div>
+    <div>
+        <label>Załączniki (obrazy / inne pliki):</label>
+        <input type="file" name="attachmentFiles" multiple />
+    </div>
+    <button type="submit">Wygeneruj</button>
+</form>

@@ -11,5 +11,7 @@ namespace AI_Raports_Generators.Models.Domains
         }
 
         public ICollection<Document> Documents { get; set; }
+        public bool IsPremium { get; set; } = false;
+
     }
 }
