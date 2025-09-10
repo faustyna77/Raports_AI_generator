@@ -1,0 +1,32 @@
+﻿@model AI_Raports_Generators.Models.Domains.GeneratedDocument
+@{
+    Layout = null; // Brak layoutu – czysty widok do druku
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Drukuj dokument</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .content {
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <h2>@Model.Title</h2>
+    <p><strong>Data utworzenia:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+    <hr />
+    <div class="content">@Model.Content</div>
+</body>
+</html>

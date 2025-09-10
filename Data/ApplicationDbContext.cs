@@ -17,6 +17,26 @@ namespace AI_Raports_Generators.Data
         public DbSet<MethodOfPayment> MethodOfPayments { get; set; }
         public DbSet<DocumentPosition> DocumentPositions { get; set; }
         public DbSet<GeneratedDocument> GeneratedDocuments { get; set; }
+        public DbSet<GeneratedEmail> GeneratedEmails { get; set; }
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties()
+                    .Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?)))
+                {
+                    property.SetValueConverter(
+                        new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
+                            v => v.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(v, DateTimeKind.Utc) : v.ToUniversalTime(),
+                            v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+                        ));
+                }
+            }
+        }
+
+
 
 
 

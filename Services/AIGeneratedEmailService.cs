@@ -18,43 +18,75 @@ namespace AI_Raports_Generators.Services
 
         public async Task<string> GenerateEmailAsync(string emailAddress, string topic, string purpose)
         {
-            var prompt = $"Jesteś agentem do tworzenia służbowych emaili. Napisz oficjalny mail, który jest do {emailAddress}, którego temat to {topic}, a sprawa dotyczy: {purpose}. Treści wygenerowane przez ciebie będą oficjalnie wysyłane w mailach, więc nie dopytuj na końcu, bo wystawiasz końcowy dokument.";
+            var promptText = $"Jesteś agentem do tworzenia służbowych emaili. Napisz oficjalny mail, który jest do {emailAddress}, którego temat to {topic}, a sprawa dotyczy: {purpose}. Treści wygenerowane przez ciebie będą oficjalnie wysyłane w mailach, więc nie dopytuj na końcu ani na początku, bo wystawiasz końcowy dokument.";
 
-            var apiKey = _configuration["OpenRouter:ApiKey"];
+            var apiKey = _configuration["Google:ApiKey"];
 
-            var httpClient = new HttpClient
-            {
-                Timeout = TimeSpan.FromMinutes(3)
-            };
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(3) };
 
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-            httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://twojadomena.pl");
-            httpClient.DefaultRequestHeaders.Add("X-Title", "Raport AI Generator");
-
+            // Pobranie modelu z sesji lub ustawienie domyślnego
             var selectedModel = _httpContextAccessor.HttpContext?.Session.GetString("SelectedModel")
-                                ?? "moonshotai/kimi-k2:free";
+                                ?? "gemini-2.0-flash";
 
+            // Body requestu do Gemini API
             var body = new
             {
-                model = selectedModel,
-                messages = new[]
+                contents = new[]
                 {
-                    new { role = "user", content = prompt }
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new { text = promptText }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    temperature = 0.7,
+                    topP = 0.95
                 }
             };
 
             var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync("https://openrouter.ai/api/v1/chat/completions", content);
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{selectedModel}:generateContent?key={apiKey}";
+
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.PostAsync(url, content);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Błąd podczas wywołania Gemini API: " + ex.Message);
+                return string.Empty;
+            }
 
             var json = await response.Content.ReadAsStringAsync();
             Console.WriteLine("Response JSON: " + json);
 
-            using var doc = JsonDocument.Parse(json);
-            return doc.RootElement
-                      .GetProperty("choices")[0]
-                      .GetProperty("message")
-                      .GetProperty("content")
-                      .GetString();
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+
+                if (doc.RootElement.TryGetProperty("candidates", out var candidates) &&
+                    candidates.GetArrayLength() > 0 &&
+                    candidates[0].TryGetProperty("content", out var contentElement) &&
+                    contentElement.TryGetProperty("parts", out var parts) &&
+                    parts.GetArrayLength() > 0 &&
+                    parts[0].TryGetProperty("text", out var textElement))
+                {
+                    return textElement.GetString();
+                }
+
+                Console.WriteLine("Nie znaleziono wygenerowanego tekstu w odpowiedzi API.");
+            }
+            catch (JsonException jex)
+            {
+                Console.WriteLine("Błąd parsowania JSON: " + jex.Message);
+            }
+
+            return string.Empty;
         }
     }
 }

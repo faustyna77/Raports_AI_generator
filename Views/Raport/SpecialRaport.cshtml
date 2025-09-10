@@ -9,6 +9,16 @@
         <div class="card-body">
             <h2 class="mb-4">📄 Generuj specjalny dokument</h2>
 
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+
             <form asp-action="SpecialRaport" method="post">
                 @Html.AntiForgeryToken()
 
@@ -30,38 +40,21 @@
                     <span asp-validation-for="Description" class="text-danger small"></span>
                 </div>
 
-                <h5 class="mt-4">📤 Opcje wysyłki</h5>
+               
 
-                <div class="form-check mb-2">
-                    <input type="checkbox" class="form-check-input" asp-for="SendOptions.SendToEmail" />
-                    <label class="form-check-label" asp-for="SendOptions.SendToEmail">Wyślij e-mailem</label>
-                </div>
 
-                <div class="mb-3">
-                    <input type="email" class="form-control" asp-for="SendOptions.Email" placeholder="Adres e-mail" />
-                    <span asp-validation-for="SendOptions.Email" class="text-danger small"></span>
-                </div>
+              
 
-                <div class="form-check mb-2">
-                    <input type="checkbox" class="form-check-input" asp-for="SendOptions.SaveToDrive" />
-                    <label class="form-check-label" asp-for="SendOptions.SaveToDrive">Zapisz na Google Drive</label>
-                </div>
-
-                <div class="mb-3">
-                    <input type="text" class="form-control" asp-for="SendOptions.GoogleDriveLink" placeholder="Link do folderu Google Drive" />
-                    <span asp-validation-for="SendOptions.GoogleDriveLink" class="text-danger small"></span>
-                </div>
+               
 
                 <button type="submit" name="submit" value="generate" class="btn btn-primary w-100 mt-3">⚙️ Generuj dokument</button>
 
                 @if (!string.IsNullOrEmpty(Model.GeneratedResponse))
                 {
                     <hr class="my-4" />
-                    <h4>📝 Treść wygenerowana przez AI (możesz edytować):</h4>
-
+                    <h4>📝 Treść wygenerowana (możesz edytować):</h4>
                     <textarea asp-for="GeneratedResponse" rows="15" class="form-control mb-3"></textarea>
 
-                    <!-- Ukryte dane do zachowania kontekstu -->
                     <input type="hidden" asp-for="DocumentType" />
                     <input type="hidden" asp-for="NameOfCompany" />
                     <input type="hidden" asp-for="Description" />

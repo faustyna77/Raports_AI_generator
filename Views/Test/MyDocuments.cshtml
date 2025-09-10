@@ -1,0 +1,64 @@
+﻿@model AI_Raports_Generators.Models.ViewModels.MyDocumentsViewModel
+
+<h2>📂 Moje dokumenty</h2>
+
+@if (!Model.Documents.Any() && !Model.Emails.Any())
+{
+    <p>Nie masz jeszcze żadnych wygenerowanych dokumentów ani maili.</p>
+}
+else
+{
+    <h3>📑 Wygenerowane dokumenty (posty)</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Tytuł</th>
+                <th>Data utworzenia</th>
+                <th>Podgląd</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var doc in Model.Documents)
+            {
+                <tr>
+                    <td>@doc.Title</td>
+                    <td>@doc.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        <details>
+                            <summary>Zobacz treść</summary>
+                            <pre>@doc.Content</pre>
+                        </details>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>📧 Wygenerowane maile</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Temat</th>
+                <th>Adres email</th>
+                <th>Data utworzenia</th>
+                <th>Podgląd</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var email in Model.Emails)
+            {
+                <tr>
+                    <td>@email.Topic</td>
+                    <td>@email.EmailAddress</td>
+                    <td>@email.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        <details>
+                            <summary>Zobacz treść</summary>
+                            <pre>@email.GeneratedContent</pre>
+                        </details>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

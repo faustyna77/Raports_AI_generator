@@ -7,50 +7,57 @@
 <div class="container mt-4">
     <div class="card shadow-sm border-0">
         <div class="card-body">
-            <h2 class="mb-4">Generuj dokument AI</h2>
-
-            <form asp-action="Generate" method="post">
-                <div class="mb-3">
-                    <label for="prompt" class="form-label">Podaj temat / opis dokumentu:</label>
-                    <textarea asp-for="Prompt" class="form-control" rows="5" placeholder="Opisz, co ma zawierać dokument..."></textarea>
-                </div>
-
-                <h5 class="mt-4 mb-3">Opcje wysyłki</h5>
-
-                <div class="form-check mb-2">
-                    <input type="checkbox" class="form-check-input" asp-for="SendOptions.SendToEmail" />
-                    <label class="form-check-label" asp-for="SendOptions.SendToEmail">Wyślij e-mailem</label>
-                </div>
-
-                <div class="mb-3">
-                    <input type="email" class="form-control" asp-for="SendOptions.Email" placeholder="Adres e-mail" />
-                </div>
-
-                <div class="form-check mb-2">
-                    <input type="checkbox" class="form-check-input" asp-for="SendOptions.SaveToDrive" />
-                    <label class="form-check-label" asp-for="SendOptions.SaveToDrive">Zapisz na Google Drive</label>
-                </div>
-
-                <div class="mb-3">
-                    <input type="text" class="form-control" asp-for="SendOptions.GoogleDriveLink" placeholder="Link do folderu Google Drive" />
-                </div>
-
-                <button type="submit" class="btn btn-success w-100 mt-3">📝 Generuj dokument</button>
-            </form>
-
-            @if (Model.GeneratedContent != null)
-            {
-                <hr class="my-4" />
-                <h4>📄 Treść wygenerowana przez AI:</h4>
-                <pre class="bg-light p-3 rounded border">@Model.GeneratedContent</pre>
-            }
+            <h2 class="mb-4">📝 Generuj dokument AI</h2>
 
             @if (TempData["Error"] != null)
             {
-                <div class="alert alert-danger mt-4">
-                    @TempData["Error"]
-                </div>
+                <div class="alert alert-danger">@TempData["Error"]</div>
             }
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+
+            <form asp-action="@ViewContext.RouteData.Values["action"]" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label for="Title" class="form-label">Tytuł dokumentu:</label>
+                    <input asp-for="Title" class="form-control" placeholder="Np. Raport miesięczny" />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="Prompt" class="form-label">Podaj temat / opis dokumentu:</label>
+                    <textarea asp-for="Prompt" class="form-control" rows="4" placeholder="Opisz, co ma zawierać dokument..."></textarea>
+                    <span asp-validation-for="Prompt" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" name="submit" value="generate" class="btn btn-success w-100 mb-3">🟢 Generuj dokument</button>
+
+                @if (!string.IsNullOrEmpty(Model.GeneratedContent))
+                {
+                    <hr class="my-3" />
+                    <h5>📄 Treść wygenerowana przez AI (możesz edytować):</h5>
+                    <textarea asp-for="GeneratedContent" class="form-control mb-3" rows="10"></textarea>
+                    <span asp-validation-for="GeneratedContent" class="text-danger small"></span>
+
+                   
+                    
+
+                  
+                    <button type="submit" name="submit" value="save" class="btn btn-primary w-100 mb-2">💾 Zapisz / Zaktualizuj dokument</button>
+
+                    @* Pobierz PDF *@
+                    @if (ViewBag.DocumentId != null)
+                    {
+                        <a asp-action="DownloadPdf" asp-route-id="@ViewBag.DocumentId" class="btn btn-secondary w-100 mb-2" target="_blank">📄 Pobierz PDF</a>
+                    }
+
+                  
+                }
+            </form>
         </div>
     </div>
 </div>

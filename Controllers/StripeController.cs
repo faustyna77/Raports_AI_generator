@@ -5,8 +5,10 @@
 
     namespace AI_Raports_Generators.Controllers
     {
-        public class StripeController : Controller
+           
+    public class StripeController : Controller
         {
+       
 
         [HttpGet]
         public IActionResult Buy()

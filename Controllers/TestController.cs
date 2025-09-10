@@ -1,19 +1,16 @@
-﻿using AI_Raports_Generators.Services;
-using Microsoft.AspNetCore.Mvc;
-using System.Text;
-using System.Text.Json;
-using Tesseract;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser;
-using iText.Kernel.Pdf.Canvas.Parser.Listener;
-using AI_Raports_Generators.Data;
-using AI_Raports_Generators.Models;
+﻿using AI_Raports_Generators.Data;
 using AI_Raports_Generators.Models.Domains;
+using AI_Raports_Generators.Models.ViewModels;
+using AI_Raports_Generators.Services;
+using iText.IO.Font;
+using iText.Kernel.Font;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-
 
 namespace AI_Raports_Generators.Controllers
 {
@@ -23,10 +20,8 @@ namespace AI_Raports_Generators.Controllers
         private readonly AITestService _aiTestService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
-        public TestController(
-          AITestService aiTestService,
-          UserManager<ApplicationUser> userManager,
-          ApplicationDbContext context)
+
+        public TestController(AITestService aiTestService, UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             _aiTestService = aiTestService;
             _userManager = userManager;
@@ -38,59 +33,14 @@ namespace AI_Raports_Generators.Controllers
 
         [HttpGet]
         public IActionResult Test() => View();
-
         [HttpPost]
-        public async Task<IActionResult> SaveEditedReport(string editedReport, List<IFormFile> images)
+        public async Task<IActionResult> GenerateReport(string postTitle, string hashtags, int wordCount, double temperature)
         {
             var user = await _userManager.GetUserAsync(User);
 
-            // Zbuduj zawartość PDF — tekst + obrazy
-            using var ms = new MemoryStream();
-            var writer = new PdfWriter(ms);
-            var pdf = new PdfDocument(writer);
-            var doc = new iText.Layout.Document(pdf);
-
-            doc.Add(new iText.Layout.Element.Paragraph(editedReport));
-
-            foreach (var image in images)
-            {
-                using var imgStream = image.OpenReadStream();
-                var imgData = iText.IO.Image.ImageDataFactory.Create(await ToByteArrayAsync(imgStream));
-                var img = new iText.Layout.Element.Image(imgData).ScaleToFit(500, 500).SetMarginTop(10);
-                doc.Add(img);
-            }
-
-            doc.Close();
-
-            var pdfBytes = ms.ToArray();
-
-            // Zapisz do bazy (jako tekst + PDF w bajtach)
-            var newDoc = new GeneratedDocument
-            {
-                Title = "Edytowany raport",
-                Content = editedReport,
-                CreatedAt = DateTime.UtcNow,
-                UserId = user.Id,
-                PdfFile = pdfBytes // ← musisz dodać to pole w modelu!
-            };
-
-            _context.GeneratedDocuments.Add(newDoc);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("MyDocuments"); // zakładam, że tak się nazywa twoja lista
-        }
-
-
-
-
-        [HttpPost]
-        public async Task<IActionResult> GenerateReport(IFormFile instructionFile, List<IFormFile> attachmentFiles)
-        {
-            var user = await _userManager.GetUserAsync(User);
+            // Sprawdzenie limitu 5 dokumentów w bieżącym miesiącu
             var now = DateTime.UtcNow;
             var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-
-
 
             var docsThisMonth = await _context.GeneratedDocuments
                 .Where(d => d.UserId == user.Id && d.CreatedAt >= startOfMonth)
@@ -102,109 +52,110 @@ namespace AI_Raports_Generators.Controllers
                 return RedirectToAction("Index");
             }
 
-            string instructionText = "";
-            if (instructionFile != null)
-            {
-                using var stream = instructionFile.OpenReadStream();
-                instructionText = (instructionFile.ContentType.Contains("pdf") || instructionFile.FileName.EndsWith(".pdf"))
-                    ? ExtractTextFromPdf(stream)
-                    : await RunOcrAsync(stream);
-            }
+            // Generowanie posta przez AI
+            var aiReport = await _aiTestService.GenerateReportAsync(
+                input: "",
+                temperature: temperature,
+                wordCount: wordCount,
+                hashtags: hashtags,
+                postTitle: postTitle
+            );
 
-            var attachmentTexts = new List<string>();
-            foreach (var file in attachmentFiles)
-            {
-                using var stream = file.OpenReadStream();
-                attachmentTexts.Add(await RunOcrAsync(stream));
-            }
+            // **Nie zapisujemy jeszcze w bazie**
+            ViewBag.AIReport = aiReport;
+            ViewBag.PostTitle = postTitle;
+            return View("Test");
+        }
 
-            var combinedText = instructionText + "\n\nZAŁĄCZNIKI:\n" + string.Join("\n", attachmentTexts);
-           
-            var model = HttpContext.Session.GetString("SelectedModel") ?? "mistralai/mistral-small-3.2-24b-instruct";
-            var aiReport = await _aiTestService.GenerateReportAsync(combinedText, model);
+
+        [HttpPost]
+        public async Task<IActionResult> SaveEditedReport(string editedReport, string postTitle)
+        {
+            var user = await _userManager.GetUserAsync(User);
 
             // Zapis do bazy
             _context.GeneratedDocuments.Add(new GeneratedDocument
             {
-                Title = "Raport AI",
-                Content = aiReport,
+                Title = postTitle,
+                Content = editedReport,
                 CreatedAt = DateTime.UtcNow,
                 UserId = user.Id
             });
             await _context.SaveChangesAsync();
 
-            // Webhook (opcjonalnie)
-            
-            using var httpClient = new HttpClient
+            // Po zapisaniu przekierowanie do widoku MyDocuments w folderze Report
+            var documents = await _context.GeneratedDocuments
+                .Where(d => d.UserId == user.Id)
+                .OrderByDescending(d => d.CreatedAt)
+                .ToListAsync();
+
+            var emails = await _context.GeneratedEmails
+                .Where(e => e.UserId == user.Id)
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
+            var vm = new MyDocumentsViewModel
             {
-                Timeout = TimeSpan.FromSeconds(900)
+                Documents = documents,
+                Emails = emails
             };
 
-            httpClient.DefaultRequestHeaders.Add("x-make-apikey", "my-secret-key");
-
-            var payload = new
-            {
-                title_doc = "Raport AI",
-                content_doc = aiReport,
-                user_email = user.Email,
-                createdAt = DateTime.UtcNow,
-                userId = user.Id
-            };
-
-            var json = JsonConvert.SerializeObject(payload);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            await httpClient.PostAsync("https://hook.eu2.make.com/qdug1uf3v8kxhjpdxctxdgip3m9ac6jp", content);
-
-            ViewBag.AIReport = aiReport;
-            return View("ReportResult");
+            return RedirectToAction("MyDocuments", "Raport");
         }
-
-
-        private string ExtractTextFromPdf(Stream pdfStream)
+        [HttpGet]
+        public async Task<IActionResult> EditPost(int id)
         {
-            var sb = new StringBuilder();
-            using var reader = new PdfReader(pdfStream);
-            using var pdf = new PdfDocument(reader);
+            var post = await _context.GeneratedDocuments.FindAsync(id);
+            if (post == null) return NotFound();
 
-            for (int i = 1; i <= pdf.GetNumberOfPages(); i++)
+            var model = new EditPostViewModel
             {
-                var page = pdf.GetPage(i);
-                var strategy = new SimpleTextExtractionStrategy();
-                var text = PdfTextExtractor.GetTextFromPage(page, strategy);
-                sb.AppendLine(text);
-            }
+                Title = post.Title,
+                Content = post.Content
+            };
 
-            return sb.ToString();
+            return View("EditPost", model); // nowy widok
         }
+
+        [HttpPost]
+        public async Task<IActionResult> EditPost(int id, EditPostViewModel model)
+        {
+            var post = await _context.GeneratedDocuments.FindAsync(id);
+            if (post == null) return NotFound();
+
+            post.Title = model.Title;
+            post.Content = model.Content;
+            post.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Post zaktualizowany!";
+
+            return RedirectToAction("MyDocuments", "Raport"); // lub Raport, tam gdzie jest widok
+        }
+
+
         [HttpPost]
         public IActionResult SaveReportAsPdf(string editedReport)
         {
+            var fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fonts", "arial.ttf");
+            if (!System.IO.File.Exists(fontPath))
+                throw new FileNotFoundException("Nie znaleziono pliku czcionki TTF.", fontPath);
+
+            var font = PdfFontFactory.CreateFont(fontPath, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+
             using var ms = new MemoryStream();
             var writer = new PdfWriter(ms);
             var pdf = new PdfDocument(writer);
-            var doc = new iText.Layout.Document(pdf);
-            doc.Add(new iText.Layout.Element.Paragraph(editedReport));
-            doc.Close();
+            var document = new iText.Layout.Document(pdf);
+
+
+            document.SetFont(font);
+            document.Add(new Paragraph(editedReport));
+            document.Close();
 
             var pdfBytes = ms.ToArray();
-            return File(pdfBytes, "application/pdf", "Sprawozdanie.pdf");
+            return File(pdfBytes, "application/pdf", "post.pdf");
         }
-
-        private async Task<string> RunOcrAsync(Stream imageStream)
-        {
-            using var engine = new TesseractEngine("./tessdata", "eng", EngineMode.Default);
-            using var img = Pix.LoadFromMemory(await ToByteArrayAsync(imageStream));
-            using var page = engine.Process(img);
-            return page.GetText();
-        }
-
-        private async Task<byte[]> ToByteArrayAsync(Stream input)
-        {
-            using var ms = new MemoryStream();
-            await input.CopyToAsync(ms);
-            return ms.ToArray();
-        }
-
 
         [HttpGet]
         public async Task<IActionResult> MyDocuments()
@@ -216,8 +167,19 @@ namespace AI_Raports_Generators.Controllers
                 .OrderByDescending(d => d.CreatedAt)
                 .ToListAsync();
 
-            return View(documents);
-        }
+            var emails = await _context.GeneratedEmails
+                .Where(e => e.UserId == user.Id)
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
 
+            var vm = new MyDocumentsViewModel
+            {
+                Documents = documents,
+                Emails = emails
+            };
+
+            return RedirectToAction("MyDocuments", "Raport");
+
+        }
     }
 }

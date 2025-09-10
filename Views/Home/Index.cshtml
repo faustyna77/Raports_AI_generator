@@ -1,10 +1,44 @@
-﻿@model List<string> 
-@{
-    ViewData["Title"] = "Wybierz model AI";
+﻿@{
+    ViewData["Title"] = "Wybierz plan";
 }
 
-<form method="post" asp-controller="Home" asp-action="CreateCheckoutSession">
-    <button type="submit" class="btn btn-primary">Rozszerz plan</button>
-</form>
+@if (User.Identity.IsAuthenticated)
+{
+   
+}
 
+<div class="text-center mb-4">
+    <img src="~/images/ai.gif" alt="AI generowanie" class="img-fluid rounded shadow" style="max-height: 300px;" />
+</div>
 
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <h4>📌 Plan darmowy</h4>
+        <ul class="list-unstyled">
+            <li>✅ 5 dokumentów / miesiąc</li>
+            <li>✅ 5 maili / miesiąc</li>
+            <li>✅ Dostęp do modelu AI</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <h4>💎 Plan płatny – 99 zł</h4>
+        <ul class="list-unstyled">
+            <li>✅ Brak limitu dokumentów i maili</li>
+            <li>✅ Dostęp do modelu AI</li>
+            <li>✅ Priorytetowa obsługa i wsparcie</li>
+        </ul>
+        @if (!User.Identity.IsAuthenticated)
+        {
+            <p class="text-muted">Zaloguj się, aby rozszerzyć plan.</p>
+        }
+        else
+        {
+            <form method="post" asp-controller="Home" asp-action="CreateCheckoutSession">
+                <button type="submit" class="btn btn-success mt-2">Rozszerz plan</button>
+            </form>
+        }
+    </div>
+</div>

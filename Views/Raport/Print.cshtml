@@ -1,0 +1,28 @@
+﻿@model AI_Raports_Generators.Models.Domains.GeneratedDocument
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@Model.Title</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        h1 {
+            font-size: 22px;
+        }
+
+        p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <h1>@Model.Title</h1>
+    <p>@Model.Content</p>
+</body>
+</html>

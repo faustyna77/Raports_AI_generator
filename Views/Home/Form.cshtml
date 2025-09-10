@@ -1,45 +1,51 @@
 ﻿@model AI_Raports_Generators.Models.ViewModels.Form
-<h2>Formularz rejestracyjny</h2>
 
-<form asp-action="Form" method="post">
+<h2 class="mb-4">Formularz rejestracyjny</h2>
 
-    <div>
-        <label asp-for="Name"></label>
-        <input asp-for="Name" />
+<form asp-action="Form" method="post" class="mb-4">
+    <div class="form-group mb-3">
+        <label asp-for="Name" class="form-label">Imię</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger small"></span>
     </div>
 
-    <div>
-        <label asp-for="Surname"></label>
-        <input asp-for="Surname" />
+    <div class="form-group mb-3">
+        <label asp-for="Surname" class="form-label">Nazwisko</label>
+        <input asp-for="Surname" class="form-control" />
+        <span asp-validation-for="Surname" class="text-danger small"></span>
     </div>
 
-    <div>
-        <label asp-for="Age"></label>
-        <input asp-for="Age" type="number" />
+    <div class="form-group mb-3">
+        <label asp-for="Age" class="form-label">Wiek</label>
+        <input asp-for="Age" type="number" class="form-control" />
+        <span asp-validation-for="Age" class="text-danger small"></span>
     </div>
 
-    <div>
-        <label asp-for="DateOfBirth"></label>
-        <input asp-for="DateOfBirth" type="date" />
+    <div class="form-group mb-3">
+        <label asp-for="DateOfBirth" class="form-label">Data urodzenia</label>
+        <input asp-for="DateOfBirth" type="date" class="form-control" />
+        <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
     </div>
 
-    <div>
-        <label asp-for="Email"></label>
-        <input asp-for="Email" type="email" />
+    <div class="form-group mb-3">
+        <label asp-for="Email" class="form-label">Adres e-mail</label>
+        <input asp-for="Email" type="email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger small"></span>
     </div>
 
-    <button type="submit">Wyślij</button>
+    <button type="submit" class="btn btn-primary">Wyślij</button>
 </form>
 
 @if (Model != null)
 {
-    <h3>Dane przesłane</h3>
-    <ol>
-        <li>Imię: @Model.Name</li>
-        <li>Nazwisko: @Model.Surname</li>
-        <li>Wiek: @Model.Age</li>
-        <li>Data urodzenia: @Model.DateOfBirth.ToShortDateString()</li>
-        <li>Email: @Model.Email</li>
-    </ol>
+    <div class="alert alert-success">
+        <h5>Dane przesłane:</h5>
+        <ul class="mb-0">
+            <li><strong>Imię:</strong> @Model.Name</li>
+            <li><strong>Nazwisko:</strong> @Model.Surname</li>
+            <li><strong>Wiek:</strong> @Model.Age</li>
+            <li><strong>Data urodzenia:</strong> @Model.DateOfBirth.ToShortDateString()</li>
+            <li><strong>Email:</strong> @Model.Email</li>
+        </ul>
+    </div>
 }
-

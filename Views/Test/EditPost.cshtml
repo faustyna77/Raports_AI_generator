@@ -1,0 +1,29 @@
+﻿@model AI_Raports_Generators.Models.ViewModels.EditPostViewModel
+
+@{
+    ViewData["Title"] = "Edytuj post";
+}
+
+<h2>✏️ Edytuj post</h2>
+
+<form asp-action="EditPost" asp-controller="Test" method="post">
+   
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Content" class="form-label"></label>
+        <textarea asp-for="Content" class="form-control" rows="10"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Zaktualizuj post</button>
+    <a asp-action="MyDocuments" asp-controller="Document" class="btn btn-secondary">Anuluj</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

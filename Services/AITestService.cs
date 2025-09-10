@@ -1,53 +1,105 @@
-﻿using System.Text;
+﻿using System.Net.Http;
+using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
 
 namespace AI_Raports_Generators.Services
 {
     public class AITestService
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _apiKey;
+        private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AITestService(HttpClient httpClient, IConfiguration configuration)
+        public AITestService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
-            _httpClient = httpClient;
-            _apiKey = configuration["OpenRouter:ApiKey"];
+            _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
+        }
 
-            if (!string.IsNullOrEmpty(_apiKey))
+        public async Task<string> GenerateReportAsync(
+            string input,
+            double temperature = 0.7,
+            int wordCount = 500,
+            string? hashtags = null,
+            string? postTitle = null)
+        {
+            var apiKey = _configuration["Google:ApiKey"];
+            var selectedModel = _httpContextAccessor.HttpContext?.Session.GetString("SelectedModel")
+                                ?? "gemini-2.0-flash";
+
+            var prompt = $"Napisz profesjonalny post na bloga na temat: \"{postTitle}\".\n" +
+                         $"Treść powinna zawierać około {wordCount} słów.\n" +
+                         (!string.IsNullOrEmpty(hashtags) ? $"Dodaj na końcu hashtagi: {hashtags}.\n" : "") +
+                         $"Dodatkowe informacje: {input}.\n" +
+                         "Post powinien być spójny, atrakcyjny i wartościowy dla czytelnika.";
+
+            var body = new
             {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
-            }
-        }
-
-       
-
-
-                public async Task<string> GenerateReportAsync(string input, string model)
-        {
-            var prompt = $"Wygeneruj profesjonalne sprawozdanie na podstawie poniższych danych:\n{input}";
-
-            var content = new StringContent(
-                JsonSerializer.Serialize(new
+                contents = new[]
                 {
-                    model = model,
-                    messages = new[]
+                    new
                     {
-                new { role = "user", content = prompt }
+                        parts = new[]
+                        {
+                            new { text = prompt }
+                        }
                     }
-                }),
-                Encoding.UTF8, "application/json"
-            );
+                },
+                generationConfig = new
+                {
+                    temperature = temperature,
+                    topP = 0.95
+                }
+            };
 
-            var response = await _httpClient.PostAsync("https://openrouter.ai/api/v1/chat/completions", content);
+            var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{selectedModel}:generateContent?key={apiKey}";
+
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(3) };
+
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.PostAsync(url, content);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Błąd połączenia z Gemini API: " + ex.Message);
+                return string.Empty;
+            }
+
             var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("🌐 Response JSON: " + json);
 
-            using var doc = JsonDocument.Parse(json);
-            return doc.RootElement
-                .GetProperty("choices")[0]
-                .GetProperty("message")
-                .GetProperty("content")
-                .GetString();
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                Console.WriteLine("⚠️ Odpowiedź API była pusta.");
+                return string.Empty;
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+
+                if (doc.RootElement.TryGetProperty("candidates", out var candidates) &&
+                    candidates.GetArrayLength() > 0 &&
+                    candidates[0].TryGetProperty("content", out var contentElement) &&
+                    contentElement.TryGetProperty("parts", out var parts) &&
+                    parts.GetArrayLength() > 0 &&
+                    parts[0].TryGetProperty("text", out var textElement))
+                {
+                    return textElement.GetString() ?? string.Empty;
+                }
+
+                Console.WriteLine("⚠️ Nie znaleziono wygenerowanego tekstu w odpowiedzi API.");
+            }
+            catch (JsonException jex)
+            {
+                Console.WriteLine("❌ Błąd parsowania JSON: " + jex.Message);
+            }
+
+            return string.Empty;
         }
-
     }
 }

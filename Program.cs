@@ -38,6 +38,9 @@ builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Str
 builder.Services.AddHttpClient<AITestService>();
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpContextAccessor(); // konieczne, ¿eby IHttpContextAccessor dzia³a³
+builder.Services.AddScoped<AITestService>();
+
 
 Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
