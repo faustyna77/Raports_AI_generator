@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using AI_Raports_Generators.Services;
 using QuestPDF.Infrastructure;
 
-using AI_Raports_Generators.Models.ViewModels; // to dodaj na górze
+using AI_Raports_Generators.Models.ViewModels; // to dodaj na gï¿½rze
 
 
 
@@ -38,7 +38,7 @@ builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Str
 builder.Services.AddHttpClient<AITestService>();
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddHttpContextAccessor(); // konieczne, ¿eby IHttpContextAccessor dzia³a³
+builder.Services.AddHttpContextAccessor(); // konieczne, ï¿½eby IHttpContextAccessor dziaï¿½aï¿½
 builder.Services.AddScoped<AITestService>();
 
 
